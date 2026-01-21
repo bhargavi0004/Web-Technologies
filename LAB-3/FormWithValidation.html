@@ -1,0 +1,122 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Adaptive Registration</title>
+    <style>
+      .error {
+        border: 2px solid red;
+      }
+      .success {
+        border: 2px solid green;
+      }
+      #feedback {
+        color: red;
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div align="center">
+      <h2>Registration Form</h2>
+      <form id="regForm">
+        <input id="name" placeholder="Name" required /><br /><br />
+        <input
+          id="email"
+          type="email"
+          placeholder="Email"
+          required
+        /><br /><br />
+        <input
+          id="password"
+          type="password"
+          placeholder="Password"
+          required
+        /><br /><br />
+        <input
+          id="confirm"
+          type="password"
+          placeholder="Confirm Password"
+          required
+        /><br /><br />
+        <input id="age" type="number" placeholder="Age" required /><br /><br />
+
+        <label for="role">Role:</label>
+        <select id="role">
+          <option value="Student">Student</option>
+          <option value="Teacher">Teacher</option>
+          <option value="Admin">Admin</option></select
+        ><br /><br />
+
+        <div id="skillsField">
+          <input id="skills" placeholder="Skills" /><br /><br />
+        </div>
+
+        <button type="submit">Register</button>
+      </form>
+
+      <div id="feedback"></div>
+
+      <script>
+        const form = document.getElementById("regForm");
+        const feedback = document.getElementById("feedback");
+
+        function validatePassword(role, pass) {
+          if (role === "Admin")
+            return /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/.test(pass);
+          if (role === "Teacher") return pass.length >= 6;
+          return pass.length >= 4;
+        }
+
+        function validateEmail(email) {
+          return email.endsWith("@gmail.com");
+        }
+
+        function markField(field, valid) {
+          if (valid) {
+            field.classList.remove("error");
+            field.classList.add("success");
+          } else {
+            field.classList.remove("success");
+            field.classList.add("error");
+          }
+        }
+
+        form.addEventListener("input", () => {
+          const role = document.getElementById("role").value;
+          const email = document.getElementById("email");
+          const pass = document.getElementById("password");
+          const confirm = document.getElementById("confirm");
+
+          markField(email, validateEmail(email.value));
+          markField(pass, validatePassword(role, pass.value));
+          markField(confirm, pass.value === confirm.value);
+        });
+
+        document.getElementById("role").addEventListener("change", (e) => {
+          const role = e.target.value;
+          const skillsField = document.getElementById("skillsField");
+          if (role === "Student") skillsField.style.display = "block";
+          else skillsField.style.display = "none";
+        });
+
+        form.addEventListener("submit", (e) => {
+          e.preventDefault();
+          const role = document.getElementById("role").value;
+          const email = document.getElementById("email").value;
+          const pass = document.getElementById("password").value;
+          const confirm = document.getElementById("confirm").value;
+
+          if (!validateEmail(email))
+            return (feedback.textContent = "Invalid email domain!");
+          if (!validatePassword(role, pass))
+            return (feedback.textContent = "Weak password for " + role);
+          if (pass !== confirm)
+            return (feedback.textContent = "Passwords do not match!");
+
+          feedback.style.color = "green";
+          feedback.textContent = "Registration successful!";
+        });
+      </script>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,154 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Multi-Step Form</title>
+    <style>
+      body {
+        font-family: Arial;
+      }
+      .stage {
+        display: none;
+        margin-top: 20px;
+      }
+      .active {
+        display: block;
+      }
+      .error {
+        color: red;
+        font-size: 0.9em;
+      }
+      #progressBar {
+        width: 100%;
+        background: #eee;
+        height: 20px;
+        margin-top: 10px;
+      }
+      #progress {
+        height: 100%;
+        width: 0%;
+        background: green;
+        text-align: center;
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Multi-Step Form</h2>
+    <div id="progressBar"><div id="progress">0%</div></div>
+
+    <form id="multiForm">
+      <div id="stage1" class="stage active">
+        <h3>Stage 1: Personal Info</h3>
+        <input id="name" placeholder="Name" required /><br />
+        <span id="error1" class="error"></span><br />
+        <button type="button" onclick="nextStage(1)">Next</button>
+      </div>
+
+      <div id="stage2" class="stage">
+        <h3>Stage 2: Contact Info</h3>
+        <input id="email" type="email" placeholder="Email" required /><br />
+        <span id="error2" class="error"></span><br />
+        <button type="button" onclick="prevStage(2)">Back</button>
+        <button type="button" onclick="nextStage(2)">Next</button>
+      </div>
+
+      <div id="stage3" class="stage">
+        <h3>Stage 3: Age Verification</h3>
+        <input id="age" type="number" placeholder="Age" required /><br />
+        <span id="error3" class="error"></span><br />
+        <button type="button" onclick="prevStage(3)">Back</button>
+        <button type="button" onclick="nextStage(3)">Next</button>
+      </div>
+
+      <div id="stage4" class="stage">
+        <h3>Stage 4: Skills</h3>
+        <input
+          id="skills"
+          placeholder="Skills (comma separated)"
+          required
+        /><br />
+        <span id="error4" class="error"></span><br />
+        <button type="button" onclick="prevStage(4)">Back</button>
+        <button type="submit">Submit</button>
+      </div>
+    </form>
+
+    <div id="finalMsg"></div>
+
+    <script>
+      let currentStage = 1;
+      let formData = {};
+
+      function showStage(stage) {
+        document
+          .querySelectorAll(".stage")
+          .forEach((div) => div.classList.remove("active"));
+        document.getElementById("stage" + stage).classList.add("active");
+        updateProgress(stage);
+      }
+
+      function updateProgress(stage) {
+        const percent = (stage / 4) * 100;
+        const progress = document.getElementById("progress");
+        progress.style.width = percent + "%";
+        progress.textContent = percent + "%";
+      }
+
+      function validateStage(stage) {
+        let valid = true;
+        let errorSpan = document.getElementById("error" + stage);
+        errorSpan.textContent = "";
+
+        if (stage === 1) {
+          const name = document.getElementById("name").value.trim();
+          if (name.length < 3) {
+            errorSpan.textContent = "Name must be at least 3 characters.";
+            valid = false;
+          } else formData.name = name;
+        }
+        if (stage === 2) {
+          const email = document.getElementById("email").value.trim();
+          if (!email.includes("@")) {
+            errorSpan.textContent = "Invalid email.";
+            valid = false;
+          } else formData.email = email;
+        }
+        if (stage === 3) {
+          const age = parseInt(document.getElementById("age").value);
+          if (isNaN(age) || age < 18) {
+            errorSpan.textContent = "Must be 18 or older.";
+            valid = false;
+          } else formData.age = age;
+        }
+        if (stage === 4) {
+          const skills = document.getElementById("skills").value.trim();
+          if (skills.split(",").length < 1) {
+            errorSpan.textContent = "Enter at least one skill.";
+            valid = false;
+          } else formData.skills = skills;
+        }
+        return valid;
+      }
+
+      function nextStage(stage) {
+        if (validateStage(stage)) {
+          currentStage = stage + 1;
+          showStage(currentStage);
+        }
+      }
+
+      function prevStage(stage) {
+        currentStage = stage - 1;
+        showStage(currentStage);
+      }
+
+      document.getElementById("multiForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+        if (validateStage(4)) {
+          document.getElementById("finalMsg").textContent =
+            "Form submitted successfully! Data: " + JSON.stringify(formData);
+        }
+      });
+    </script>
+  </body>
+</html>

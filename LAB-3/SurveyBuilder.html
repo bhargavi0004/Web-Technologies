@@ -1,0 +1,135 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Dynamic Survey Builder</title>
+    <style>
+      .error {
+        color: red;
+        font-size: 0.9em;
+      }
+      .invalid {
+        border: 2px solid red;
+      }
+      .valid {
+        border: 2px solid green;
+      }
+    </style>
+  </head>
+  <body>
+    <div align="center">
+      <h2>Survey</h2>
+      <form id="surveyForm"></form>
+      <div id="formFeedback"></div>
+
+      <script>
+        const questions = [
+          { text: "Your name?", type: "text", required: true, maxLength: 20 },
+          {
+            text: "Favorite color?",
+            type: "radio",
+            options: ["Red", "Blue", "Green"],
+            required: true,
+          },
+          {
+            text: "Select hobbies",
+            type: "checkbox",
+            options: ["Sports", "Music", "Coding"],
+            required: true,
+            minSelect: 1,
+          },
+        ];
+
+        const form = document.getElementById("surveyForm");
+
+        questions.forEach((q, index) => {
+          const wrapper = document.createElement("div");
+          const label = document.createElement("label");
+          label.textContent = q.text;
+          wrapper.appendChild(label);
+          wrapper.appendChild(document.createElement("br"));
+
+          if (q.type === "text") {
+            const input = document.createElement("input");
+            input.type = "text";
+            input.dataset.index = index;
+            wrapper.appendChild(input);
+          } else {
+            q.options.forEach((opt) => {
+              const input = document.createElement("input");
+              input.type = q.type;
+              input.name = "q" + index;
+              input.value = opt;
+              input.dataset.index = index;
+              wrapper.appendChild(input);
+              wrapper.appendChild(document.createTextNode(opt));
+              wrapper.appendChild(document.createElement("br"));
+            });
+          }
+
+          const errorMsg = document.createElement("div");
+          errorMsg.className = "error";
+          errorMsg.id = "error-" + index;
+          wrapper.appendChild(errorMsg);
+
+          form.appendChild(wrapper);
+          form.appendChild(document.createElement("br"));
+        });
+
+        function validateSurvey() {
+          let valid = true;
+          questions.forEach((q, i) => {
+            const errorDiv = document.getElementById("error-" + i);
+            errorDiv.textContent = "";
+            if (q.type === "text") {
+              const input = form.querySelector(`input[data-index="${i}"]`);
+              if (q.required && !input.value.trim()) {
+                errorDiv.textContent = "This field is required.";
+                input.classList.add("invalid");
+                valid = false;
+              } else if (q.maxLength && input.value.length > q.maxLength) {
+                errorDiv.textContent = `Max ${q.maxLength} characters allowed.`;
+                input.classList.add("invalid");
+                valid = false;
+              } else {
+                input.classList.remove("invalid");
+                input.classList.add("valid");
+              }
+            } else if (q.type === "radio") {
+              const selected = form.querySelectorAll(
+                `input[name="q${i}"]:checked`,
+              );
+              if (q.required && selected.length === 0) {
+                errorDiv.textContent = "Please select an option.";
+                valid = false;
+              }
+            } else if (q.type === "checkbox") {
+              const selected = form.querySelectorAll(
+                `input[data-index="${i}"]:checked`,
+              );
+              if (q.required && selected.length < q.minSelect) {
+                errorDiv.textContent = `Select at least ${q.minSelect} option(s).`;
+                valid = false;
+              }
+            }
+          });
+          return valid;
+        }
+
+        form.addEventListener("submit", (e) => {
+          e.preventDefault();
+          if (validateSurvey()) {
+            document.getElementById("formFeedback").textContent =
+              "Survey submitted successfully!";
+            document.getElementById("formFeedback").style.color = "green";
+          } else {
+            document.getElementById("formFeedback").textContent =
+              "Please fix errors before submitting.";
+            document.getElementById("formFeedback").style.color = "red";
+          }
+        });
+      </script>
+
+      <button type="submit" form="surveyForm">Submit Survey</button>
+    </div>
+  </body>
+</html>
